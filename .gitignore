@@ -79,6 +79,10 @@ Thumbs.db
 
 # Ignore temporary storage
 /etc/tmp/storage/*/
+/temp/
 
 # Ignore zsudo executable
 /bin/zsudo
+
+# Ignore zppy cache
+/etc/zppy-cache

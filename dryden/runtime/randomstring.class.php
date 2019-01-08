@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright 2014-2015 Sentora Project (http://www.sentora.org/) 
  * Sentora is a GPL fork of the ZPanel Project whose original header follows:
@@ -14,7 +15,8 @@
  * @license GPL (http://www.gnu.org/licenses/gpl.html)
  */
 
-class runtime_randomstring{
+class runtime_randomstring
+{
     /**
      * Generate a random string
      * @author Sam Mottley (smottley@zpanelcp.com)
@@ -22,8 +24,9 @@ class runtime_randomstring{
      * @param string $charachters list of all allowed chars
      * @param string $hash True or False or Type of algeritherm to hash the the mixed string with. Hash may break other settings depending on the argirithom selected.
      * @return string A random string
-     */    
-     static public function randomHash($size = 50, $characters='1234567890qwertyuiopasdfghjklzxcvbnm', $hash = false) {
+     */
+    static public function randomHash($size = 50, $characters = '1234567890qwertyuiopasdfghjklzxcvbnm', $hash = false)
+    {
         //declare varables
         $seed = '';
         $hashMixed = '';
@@ -31,9 +34,9 @@ class runtime_randomstring{
         $loop = $size / 5;
         
         //loop X times random number
-        for($m = 0; $m < $loop; $m++){
+        for ($m = 0; $m < $loop; $m++) {
             //random string
-            $seed .= str_replace('-','',crc32(uniqid(sha1(microtime(true) . getmypid() . rand(10000,99999999)), true)));
+            $seed .= str_replace('-', '', crc32(uniqid(sha1(microtime(true) . getmypid() . rand(10000, 99999999)), true)));
         }
         
         //randomise string again
@@ -45,23 +48,23 @@ class runtime_randomstring{
         //loop 
         for ($i = 0; $i < $loopNow; $i++) {
             //search for char in chracter list 
-           $char = mt_rand($seed[$i], strlen($charachters));
+            $char = mt_rand($seed[$i], strlen($charachters));
            //add it to hash
-           $hashMixed .= @$charachters[$char];
+            $hashMixed .= @$charachters[$char];
         }
         
         //Just incase php is Pseudo based. I dont think so but double check 
         $hashMixed = substr($hashMixed, 10);
-        $length = strlen($hashMixed)-10;
-        $hashMixed = substr($hashMixed, 0,$length);
+        $length = strlen($hashMixed) - 10;
+        $hashMixed = substr($hashMixed, 0, $length);
         
         //Now we check if size matters
-        if($size != false){
+        if ($size != false) {
             //check hash against demanded size
-            if(strlen($hashMixed) >= $size){
+            if (strlen($hashMixed) >= $size) {
                 //trim the hash down to size
                 $hashMixed = substr($hashMixed, 0, $size);
-            }else if(strlen($hashMixed) <= $size){
+            } else if (strlen($hashMixed) <= $size) {
                 //increase hash length here
                 //Declare varables
                 $needed = $size - strlen($hashMixed);
@@ -71,9 +74,9 @@ class runtime_randomstring{
                 $hashMixedAdditon = '';
                 
                 //Loop X times Make random number
-                for($m = 0; $m < $loops; $m++){
+                for ($m = 0; $m < $loops; $m++) {
                     //random string
-                    $seed .= str_replace('-','',crc32(uniqid(sha1(microtime(true) . getmypid() . rand(10000,99999999)), true)));
+                    $seed .= str_replace('-', '', crc32(uniqid(sha1(microtime(true) . getmypid() . rand(10000, 99999999)), true)));
                 }
                 //randomise string again
                 mt_srand($seed);
@@ -82,9 +85,9 @@ class runtime_randomstring{
                 //Change random number into string
                 for ($i = 0; $i < strlen($seed); $i++) {
                     //search for char in chracter list 
-                   $char = mt_rand($seed[$i], strlen($charachters));
+                    $char = mt_rand($seed[$i], strlen($charachters));
                    //add it to hash
-                   $hashMixedAdditon .= @$charachters[$char];
+                    $hashMixedAdditon .= @$charachters[$char];
                 }
                 
                 //trim to need number of chars
@@ -96,11 +99,13 @@ class runtime_randomstring{
         }
             
         //check if hashing is needed
-        if($hash == false){
+        if ($hash == false) {
             //do not hash
             $hash = $hashMixed;
-        }else{
-            if($hash == true){ $hash = 'sha256'; }
+        } else {
+            if ($hash == true) {
+                $hash = 'sha256';
+            }
             //Then hash the hash is sha256
             $hash = hash($hash, $hashMixed);
         }
@@ -112,7 +117,5 @@ class runtime_randomstring{
         return $hash;
     }
 
-    
-}
 
-?>
+}
