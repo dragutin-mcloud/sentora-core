@@ -56,9 +56,11 @@ class module_controller extends ctrl_module
             $sql2->bindParam(':userid', $currentuser['userid']);
             $sql2->execute();
             while ($rowaliases = $sql2->fetch()) {
-                array_push($res, array('address' => $rowaliases['al_address_vc'],
+                array_push($res, array(
+                    'address' => $rowaliases['al_address_vc'],
                     'destination' => $rowaliases['al_destination_vc'],
-                    'id' => $rowaliases['al_id_pk']));
+                    'id' => $rowaliases['al_id_pk']
+                ));
             }
             return $res;
         } else {
@@ -81,9 +83,11 @@ class module_controller extends ctrl_module
             $sql->bindParam(':aid', $aid);
             $sql->execute();
             while ($rowaliases = $sql->fetch()) {
-                array_push($res, array('address' => $rowaliases['al_address_vc'],
+                array_push($res, array(
+                    'address' => $rowaliases['al_address_vc'],
                     'destination' => $rowaliases['al_destination_vc'],
-                    'id' => $rowaliases['al_id_pk']));
+                    'id' => $rowaliases['al_id_pk']
+                ));
             }
             return $res;
         } else {
@@ -110,33 +114,35 @@ class module_controller extends ctrl_module
             $res = array();
             $sqlRun->execute();
             while ($rowmailboxes = $sqlRun->fetch()) {
-                array_push($res, array('address' => $rowmailboxes['mb_address_vc'],
-                    'id' => $rowmailboxes['mb_id_pk']));
+                array_push($res, array(
+                    'address' => $rowmailboxes['mb_address_vc'],
+                    'id' => $rowmailboxes['mb_id_pk']
+                ));
             }
             return $res;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Produces a list of domain names only.
      * @global db_driver $zdbh
      * @param int $uid
      * @return boolean
      */
-    static function getDomainList($uid)
+    static function getDomainList($uid = null)
     {
         global $zdbh;
         $currentuser = ctrl_users::GetUserDetail($uid);
-        
+
         $sql = "SELECT * FROM x_vhosts WHERE vh_acc_fk=:userid AND vh_enabled_in=1 AND vh_deleted_ts IS NULL ORDER BY vh_name_vc ASC";
         $binds = array(':userid' => $currentuser['userid']);
         $prepared = $zdbh->bindQuery($sql, $binds);
-        
+
         $rows = $prepared->fetchAll(PDO::FETCH_ASSOC);
         $return = array();
-        
+
         if (count($rows) > 0) {
             foreach ($rows as $row) {
                 $return[] = array('domain' => $row['vh_name_vc']);
@@ -192,21 +198,21 @@ class module_controller extends ctrl_module
         global $controller;
         self::$delete = true;
         runtime_hook::Execute('OnBeforeDeleteAlias');
-        //$rowalias = $zdbh->query("SELECT * FROM x_aliases WHERE al_id_pk=" . $al_id_pk . "")->Fetch();
         $bindArray = array(
             ':id' => $al_id_pk,
         );
-        $sqlStatment = $zdbh->bindQuery("SELECT * FROM x_aliases WHERE al_id_pk=:id", $bindArray);
+        $sqlStatment = $zdbh->bindQuery("SELECT * FROM `x_aliases` WHERE `al_id_pk`=:id", $bindArray);
         $rowalias = $zdbh->returnRow();
 
         // Include mail server specific file here.
         if (file_exists("modules/" . $controller->GetControllerRequest('URL', 'module') . "/code/" . ctrl_options::GetSystemOption('mailserver_php') . "")) {
             include("modules/" . $controller->GetControllerRequest('URL', 'module') . "/code/" . ctrl_options::GetSystemOption('mailserver_php') . "");
         }
-        $sqlStatmentUpdate = "UPDATE x_aliases SET al_deleted_ts=:time WHERE al_id_pk=:id";
+        $sqlStatmentUpdate = "UPDATE `x_aliases` SET `al_deleted_ts`=:time WHERE `al_id_pk`=:id";
         $sql = $zdbh->prepare($sqlStatmentUpdate);
         $sql->bindParam(':id', $al_id_pk);
-        $sql->bindParam(':time', time());
+        $time = time();
+        $sql->bindParam(':time', $time);
         $sql->execute();
         runtime_hook::Execute('OnAfterDeleteAlias');
         self::$ok = true;
@@ -226,9 +232,9 @@ class module_controller extends ctrl_module
             self::$validemail = true;
             return false;
         }
-        if(!self::IsValidDomain($domain)){
+        if (!self::IsValidDomain($domain)) {
             self::$validdomain = true;
-            return false;        
+            return false;
         }
         $sql = "SELECT * FROM x_mailboxes WHERE mb_address_vc=:fulladdress AND mb_deleted_ts IS NULL";
         $numrows = $zdbh->prepare($sql);
@@ -285,11 +291,11 @@ class module_controller extends ctrl_module
         }
         return true;
     }
-    
+
     static function IsValidDomain($domain)
     {
-         foreach(self::getDomainList() as $key => $checkDomain){
-            if(array_key_exists('domain', $checkDomain) && $checkDomain['domain'] == $domain){
+        foreach (self::getDomainList() as $key => $checkDomain) {
+            if (array_key_exists('domain', $checkDomain) && $checkDomain['domain'] == $domain) {
                 return true;
             }
         }
@@ -419,25 +425,25 @@ class module_controller extends ctrl_module
         $maximum = $currentuser['forwardersquota'];
         if ($maximum < 0) { //-1 = unlimited
             if (file_exists(ui_tpl_assetfolderpath::Template() . 'img/misc/unlimited.png')) {
-				return '<img src="' . ui_tpl_assetfolderpath::Template() . 'img/misc/unlimited.png" alt="' . ui_language::translate('Unlimited') . '"/>';
-			} else {
-				return '<img src="modules/' . $controller->GetControllerRequest('URL', 'module') . '/assets/unlimited.png" alt="' . ui_language::translate('Unlimited') . '"/>';
-			}
+                return '<img src="' . ui_tpl_assetfolderpath::Template() . 'img/misc/unlimited.png" alt="' . ui_language::translate('Unlimited') . '"/>';
+            } else {
+                return '<img src="modules/' . $controller->GetControllerRequest('URL', 'module') . '/assets/unlimited.png" alt="' . ui_language::translate('Unlimited') . '"/>';
+            }
         } else {
             $used = ctrl_users::GetQuotaUsages('forwarders', $currentuser['userid']);
             $free = max($maximum - $used, 0);
             return '<img src="etc/lib/pChart2/sentora/z3DPie.php?score=' . $free . '::' . $used
-                    . '&labels=Free: ' . $free . '::Used: ' . $used
-                    . '&legendfont=verdana&legendfontsize=8&imagesize=240::190&chartsize=120::90&radius=100&legendsize=150::160"'
-                    . ' alt="' . ui_language::translate('Pie chart') . '"/>';
+                . '&labels=Free: ' . $free . '::Used: ' . $used
+                . '&legendfont=verdana&legendfontsize=8&imagesize=240::190&chartsize=120::90&radius=100&legendsize=150::160"'
+                . ' alt="' . ui_language::translate('Pie chart') . '"/>';
         }
     }
 
     static function getQuotaLimit()
     {
         $currentuser = ctrl_users::GetUserDetail();
-        return ($currentuser['forwardersquota'] < 0 ) or //-1 = unlimited
-                ($currentuser['forwardersquota'] > ctrl_users::GetQuotaUsages('forwarders', $currentuser['userid']));
+        return ($currentuser['forwardersquota'] < 0) or //-1 = unlimited
+        ($currentuser['forwardersquota'] > ctrl_users::GetQuotaUsages('forwarders', $currentuser['userid']));
     }
 
     static function getResult()
@@ -457,7 +463,7 @@ class module_controller extends ctrl_module
         if (!fs_director::CheckForEmptyValue(self::$ok)) {
             return ui_sysmessage::shout(ui_language::translate("Changes to your aliases have been saved successfully!"), "zannounceok");
         } else {
-            return NULL;
+            return null;
         }
         return;
     }
